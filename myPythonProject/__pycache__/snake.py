@@ -48,10 +48,7 @@ class Snake:
                                      center_y = self.s_position_y,scale = 0.035)
             self.sprite1 = arcade.Sprite("image/square.png",center_x = self.new_x,
                                      center_y = self.new_y,scale = 0.035)
-                    
-        
-                
-                
+                                   
     def set(self):
             if(self.score != 0):
                 if(self.score % 2 == 0):
@@ -257,7 +254,7 @@ class myWindow(arcade.Window):
             self.change_y = 0
             arcade.pause(seconds = 0.5)
             self.game_state = True
-        #
+        
         if(self.Snake.check):
             self.restart()
             arcade.close_window()
