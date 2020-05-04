@@ -1,21 +1,23 @@
 import arcade
 
-SCREEN_WIDTH = 1000
+SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
 SCREEN_TITLE = "NEW GAME"
  
 class Button():
     def __init__(self,center_x,center_y,width,height,
-                 color,text,tilt_angle = 0):
+                 color,text,function,text_color,tilt_angle = 0):
         self.center_x = center_x
         self.center_y = center_y
         self.width = width
         self.height = height
         self.color = color
+        self.defualt = color
         self.shadow_color1 = arcade.color.DARK_GRAY
         self.shadow_color2 =arcade.color.WHITE
         self.text = text
-        self.text_color = arcade.color.BLACK
+        self.text_color = text_color
+        self.function = function
     def draw_button(self):
         textLenght = len(self.text)
         deducX = 25
@@ -31,8 +33,9 @@ class Button():
             while times > 0:
                 deducX -= 5
                 times -= 1
-            
-        arcade.draw_rectangle_filled(self.center_x,self.center_y,self.width,self.height,self.color)    
+        
+        arcade.draw_rectangle_filled(self.center_x,self.center_y,self.width,self.height,self.color)
+        arcade.draw_text_2(self.text,(self.center_x - deducX),(self.center_y - self.height * 0.15),self.text_color,font_size = 15)
         #Top
         arcade.draw_line(self.center_x - self.width/2,self.center_y + self.height/2,
                          self.center_x + self.width/2,self.center_y + self.height/2,
@@ -50,47 +53,106 @@ class Button():
                          self.center_x + self.width/2,self.center_y - self.height/2,
                          self.shadow_color1,2)
         
-        arcade.draw_text_2(self.text,self.center_x - deducX,self.center_y - self.height * 0.15,arcade.color.BLACK,font_size = 15)
-        #print(self.width/2 - self.center_x)
+        
+        
     def on_press(self):
         self.shadow_color2 = arcade.color.DARK_GRAY
         self.shadow_color1 = arcade.color.WHITE
+        self.color = (188, 190, 194)
     def on_release(self):
         self.shadow_color1 = arcade.color.DARK_GRAY
         self.shadow_color2 =arcade.color.WHITE
+        self.color = self.defualt
 
     def check_mouse_press(self,x,y):
         if x > self.center_x - self.width/2 and x < self.center_x + self.width/2 :
             if y > self.center_y - self.height/2 and y < self.center_y + self.height/2 :
-                print("Yes")
                 self.on_press()
     def check_mouse_release(self,x,y):
         if x > self.center_x - self.width/2 and x < self.center_x + self.width/2 :
             if y > self.center_y - self.height/2 and y < self.center_y + self.height/2 :
-                print("Yes")
+                self.function()
                 self.on_release()
     
         
         
 
+
 class MainMenu(arcade.View):
-    button = Button(100,400,100,50,arcade.color.GRAY,"Start")
+    def todo():
+        pass;
+    def todo1():
+        pass;
+    def todo2():
+        pass;
+    
+    button_list = []
+    x_View = 0
+    y_View = 0
+    change_x = 0
+    change_y = 0
+    movement_speed = 5
+    player = arcade.Sprite("../../SpriteLists/plasma_ball.png",center_x = 200,center_y = 300)
+    
+    RIGHT_Boundary = SCREEN_WIDTH
+    LEFT_Boundary = 40
+    
     def on_show(self):
-        arcade.set_background_color(arcade.color.WHEAT)
+        arcade.set_background_color(arcade.color.SKY_BLUE)
+        
     def on_draw(self):
         arcade.start_render()
-        self.button.draw_button()
-
+        self.player.draw()
+        pass;
+        
     def on_mouse_press(self,x,y,button,modifiers):
-        self.button.check_mouse_press(x,y)
+        pass;
+            
     def on_mouse_release(self,x,y,button,modifiers):
-        self.button.check_mouse_release(x,y)
+        pass;
+    def on_mouse_drag(self,x, y, dx, dy, buttons, modifiers):
+        pass;
+    def on_mouse_motion(self,x,y,dx,dy):
+        pass;
+    def on_key_press(self, key, modifier):
+        if key == arcade.key.UP:
+            self.change_y = 2
+            self.change_x = 0
+        if key == arcade.key.DOWN:
+            self.change_y = -2
+            self.change_x = 0
+        if key == arcade.key.LEFT:
+            self.change_x = -2
+            self.change_y = 0
+        if key == arcade.key.RIGHT:
+            self.change_x = 2
+            self.change_y = 0
+            
+    def on_key_release(self, key, modifier):
+        self.change_x = 0
+        self.change_y = 0
     def on_update(self,delta_time):
-        #print(delta_time)
-        pass
-
-
-
+        self.player.center_x += self.change_x
+        self.player.center_y += self.change_y
+        '''change = False 
+        
+        left = self.LEFT_Boundary + self.x_View
+        right = self.RIGHT_Boundary + self.x_View
+        
+        if self.sprite1.center_x < left:
+            self.x_View = self.x_View - self.movement_speed
+            left = self.LEFT_Boundary - self.x_View
+            right = self.RIGHT_Boundary - self.x_View
+            change = True
+        
+        if self.sprite1.center_x > (right-25):
+            self.x_View = self.x_View + self.movement_speed
+            left = self.LEFT_Boundary - self.x_View
+            change = True
+        
+        if change:
+            arcade.set_viewport(self.x_View,SCREEN_WIDTH + self.x_View,0,SCREEN_HEIGHT)'''
+            
 
 
 class GameOver(arcade.View):
@@ -114,6 +176,9 @@ class Puase(arcade.View):
 Window = arcade.Window(SCREEN_WIDTH,SCREEN_HEIGHT,SCREEN_TITLE)
 Window.show_view(MainMenu())
 arcade.run()
+
+
+
 
 
 '''class Customized(arcade.View):
