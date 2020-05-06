@@ -71,20 +71,56 @@ class Button():
     def check_mouse_release(self,x,y):
         if x > self.center_x - self.width/2 and x < self.center_x + self.width/2 :
             if y > self.center_y - self.height/2 and y < self.center_y + self.height/2 :
-                self.function()
+                #self.function()
                 self.on_release()
 
 
-
-
-
-
-
+class MainMenu(arcade.View): 
+    Play = Button(100,550,150,50,arcade.color.AVOCADO,"Play",None,arcade.color.GREEN)
+    Help = Button(100,450,150,50,arcade.color.AVOCADO,"Help",None,arcade.color.GREEN)
+    Heroes = Button(100,500,150,50,arcade.color.AVOCADO,"Heroes",None,arcade.color.GREEN)
+    background0 = arcade.Sprite("../../SpriteLists/tree.png",center_x=200,center_y=300)
+    background = arcade.SpriteList()
+    button_list = []
+    def on_show(self):
+        arcade.set_background_color(arcade.color.BISTRE_BROWN)
+        self.button_list.append(self.Play)
+        self.button_list.append(self.Help)
+        self.button_list.append(self.Heroes)
+        self.background.append(self.background0)
         
-        
+    def on_draw(self):
+        arcade.start_render()
+        self.Play.draw_button()
+        self.Help.draw_button()
+        self.Heroes.draw_button()
+        self.background.draw()
 
+    def on_mouse_press(self,x,y,button,modifiers):
+        for i in self.button_list:
+            i.check_mouse_press(x,y)
+            
+    def on_mouse_release(self,x,y,button,modifiers):
+        for i in self.button_list:
+            i.check_mouse_release(x,y)
 
-class MainMenu(arcade.View):
+    def on_mouse_drag(self,x, y, dx, dy, buttons, modifiers):
+        pass
+    
+    def on_mouse_motion(self,x,y,dx,dy):
+        pass
+
+    
+    def on_key_press(self, key, modifier):
+        pass
+            
+    def on_key_release(self, key, modifier):
+        pass
+    def on_update(self,delta_time):
+        pass
+
+            
+class StartGame(arcade.View):
     def todo():
         pass
     def todo1():
@@ -100,64 +136,16 @@ class MainMenu(arcade.View):
     movement_speed = 5
     RIGHT_Boundary = SCREEN_WIDTH
     LEFT_Boundary = 40
-    spriteList = arcade.SpriteList()
-    sprite = arcade.AnimatedWalkingSprite()
-    sprite.stand_left_textures = []
-    sprite.stand_left_textures.append(arcade.load_texture("../../SpriteLists/characters/stickman1.png",mirrored = True))
-    sprite.stand_right_textures = []
-    sprite.stand_right_textures.append(arcade.load_texture("../../SpriteLists/characters/stickman1.png"))
-    sprite.walk_left_textures = []
-    sprite.walk_right_textures = []
-    for i in range(1,4):
-        sprite.walk_right_textures.append(arcade.load_texture(f"../../SpriteLists/characters/stickman{i}.png"))
-        sprite.stand_right_textures.append(arcade.load_texture(f"../../SpriteLists/characters/stickman{i}.png"))
-        sprite.walk_left_textures.append(arcade.load_texture(f"../../SpriteLists/characters/stickman{i}.png",mirrored = True))
 
-    sprite.center_x = 300
-    sprite.center_y = 300
-    sprite.scale = 0.5
-    spriteList.append(sprite)
-    
     def on_show(self):
-        arcade.set_background_color(arcade.color.LIGHT_GREEN)
-        
+        pass
+
     def on_draw(self):
-        arcade.start_render()
-        self.spriteList.draw()
-        
-    def on_mouse_press(self,x,y,button,modifiers):
-        pass
-            
-    def on_mouse_release(self,x,y,button,modifiers):
         pass
 
-    
-    def on_mouse_drag(self,x, y, dx, dy, buttons, modifiers):
-        pass
-    
-    def on_mouse_motion(self,x,y,dx,dy):
-        pass
-
-    
-    def on_key_press(self, key, modifier):
-        if key == arcade.key.UP:
-            self.sprite.change_y = self.movement_speed
-        if key == arcade.key.DOWN:
-            self.sprite.change_y = -self.movement_speed
-        if key == arcade.key.LEFT:
-            self.sprite.change_x = -self.movement_speed
-        if key == arcade.key.RIGHT:
-            self.sprite.change_x = self.movement_speed
-            
-    def on_key_release(self, key, modifier):
-        self.sprite.change_y = 0
-        self.sprite.change_x = 0
     def on_update(self,delta_time):
-        self.spriteList.update_animation()
-        self.spriteList.update()
-
-
-
+        pass
+        
         '''change = False 
         
         left = self.LEFT_Boundary + self.x_View
@@ -176,28 +164,6 @@ class MainMenu(arcade.View):
         
         if change:
             arcade.set_viewport(self.x_View,SCREEN_WIDTH + self.x_View,0,SCREEN_HEIGHT)'''
-            
-
-
-class GameOver(arcade.View):
-    def on_show(self):
-        pass
-    def on_mouse_press(self,key,modifier):
-        pass
-
-class StartGame(arcade.View):
-    def on_show(self):
-        pass
-    def on_mouse_press(self,key,modifier):
-        pass
-
-
-class Puase(arcade.View):
-    def on_show(self):
-        pass
-    def on_mouse_press(self,key,modifier):
-        pass
-    
 Window = arcade.Window(SCREEN_WIDTH,SCREEN_HEIGHT,SCREEN_TITLE)
 Window.show_view(MainMenu())
 arcade.run()
