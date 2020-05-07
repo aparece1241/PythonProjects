@@ -1,4 +1,5 @@
 import arcade
+import os
 
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
@@ -71,26 +72,37 @@ class Button():
     def check_mouse_release(self,x,y):
         if x > self.center_x - self.width/2 and x < self.center_x + self.width/2 :
             if y > self.center_y - self.height/2 and y < self.center_y + self.height/2 :
-                #self.function()
+                self.function()
                 self.on_release()
 
 
-class MainMenu(arcade.View): 
-    Play = Button(100,550,150,50,arcade.color.AVOCADO,"Play",None,arcade.color.GREEN)
-    Help = Button(100,450,150,50,arcade.color.AVOCADO,"Help",None,arcade.color.GREEN)
-    Heroes = Button(100,500,150,50,arcade.color.AVOCADO,"Heroes",None,arcade.color.GREEN)
-    background0 = arcade.Sprite("../../SpriteLists/tree.png",center_x=200,center_y=300)
+class MainMenu(arcade.View):
+    def play():
+        Window.show_view(StartGame())
+        
+    Play = Button(305,260,150,50,arcade.color.AVOCADO,"Play",play,arcade.color.GREEN)
+    Help = Button(390,200,150,50,arcade.color.AVOCADO,"Help",None,arcade.color.GREEN)
+    Heroes = Button(485,260,150,50,arcade.color.AVOCADO,"Heroes",None,arcade.color.GREEN)
+    backdrop1 = arcade.Sprite("../../SpriteLists/zombie.png",center_x = 400,center_y = 400,scale = 0.8)
+    hero = arcade.Sprite("../../SpriteLists/hero.page.png",center_x = 680,center_y = 200)
+    zombie = arcade.Sprite("../../SpriteLists/zombie.page.png",center_x = 150,center_y = 150)
     background = arcade.SpriteList()
     button_list = []
+    back = arcade.load_texture("../image/square.png")
     def on_show(self):
         arcade.set_background_color(arcade.color.BISTRE_BROWN)
         self.button_list.append(self.Play)
         self.button_list.append(self.Help)
         self.button_list.append(self.Heroes)
-        self.background.append(self.background0)
+        self.background.append(self.hero)
+        self.background.append(self.backdrop1)
+        self.background.append(self.zombie)
         
     def on_draw(self):
         arcade.start_render()
+        arcade.draw_lrwh_rectangle_textured(0, 0,
+                                            SCREEN_WIDTH, SCREEN_HEIGHT,
+                                            self.back)
         self.Play.draw_button()
         self.Help.draw_button()
         self.Heroes.draw_button()
@@ -101,7 +113,7 @@ class MainMenu(arcade.View):
             i.check_mouse_press(x,y)
             
     def on_mouse_release(self,x,y,button,modifiers):
-        for i in self.button_list:
+        for i in self.button_list: 
             i.check_mouse_release(x,y)
 
     def on_mouse_drag(self,x, y, dx, dy, buttons, modifiers):
@@ -138,10 +150,12 @@ class StartGame(arcade.View):
     LEFT_Boundary = 40
 
     def on_show(self):
-        pass
+        arcade.set_background_color(arcade.color.SKY_BLUE)
 
     def on_draw(self):
-        pass
+        arcade.start_render()
+        arcade.draw_lrwh_rectangle_textured(0,0,SCREEN_WIDTH,SCREEN_HEIGHT,
+        arcade.load_texture("../../SpriteLists/backdrop.game.png"))
 
     def on_update(self,delta_time):
         pass
