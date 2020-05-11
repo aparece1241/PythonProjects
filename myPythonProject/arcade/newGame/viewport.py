@@ -54,7 +54,7 @@ class MyGame(arcade.Window):
         self.wall_list = arcade.SpriteList()
 
         # Set up the player
-        self.player_sprite = arcade.Sprite("../image/head.png", 0.4)
+        self.player_sprite = arcade.Sprite("../../SpriteLists/wall.png")
         self.player_sprite.center_x = 64
         self.player_sprite.center_y = 270
         self.player_list.append(self.player_sprite)
