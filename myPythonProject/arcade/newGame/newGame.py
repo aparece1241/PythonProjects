@@ -1,10 +1,10 @@
 import arcade
-import os
+from time import sleep
+# import os
 
-folder = os.path.dirname(os.path.abspath("wall.png"))
-join = os.path.join(folder,"SpriteLists")
-folder1 = os.path.dirname(os.path.abspath("head.png"))
-join1 = os.path.join(folder1,"arcade")
+# folder = os.path.dirname(os.path.abspath("wall.png"))
+# join = os.path.join(folder,"SpriteLists")
+# join1 = os.path.join(folder,"arcade")
 
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
@@ -88,12 +88,12 @@ class MainMenu(arcade.View):
     Play = Button(305,260,150,50,arcade.color.AVOCADO,"Play",play,arcade.color.GREEN)
     Help = Button(390,200,150,50,arcade.color.AVOCADO,"Help",None,arcade.color.GREEN)
     Heroes = Button(485,260,150,50,arcade.color.AVOCADO,"Heroes",None,arcade.color.GREEN)
-    backdrop1 = arcade.Sprite(os.path.join(join,"zombie.png"),center_x = 400,center_y = 400,scale = 0.8)
-    hero = arcade.Sprite(os.path.join(join,"hero.page.png"),center_x = 680,center_y = 200)
-    zombie = arcade.Sprite(os.path.join(join,"zombie.page.png"),center_x = 150,center_y = 150)
+    backdrop1 = arcade.Sprite("../../SpriteLists/zombie.png",center_x = 400,center_y = 400,scale = 0.8)
+    hero = arcade.Sprite("../../SpriteLists/hero.page.png",center_x = 680,center_y = 200)
+    zombie = arcade.Sprite("../../SpriteLists/zombie.page.png",center_x = 150,center_y = 150)
     background = arcade.SpriteList()
     button_list = []
-    back = arcade.load_texture(os.path.join(join1,"image","square.png"))
+    back = arcade.load_texture("../image/head.png")
     
     def on_show(self):
         arcade.set_background_color(arcade.color.BISTRE_BROWN)
@@ -146,14 +146,19 @@ class StartGame(arcade.View):
     def todo2():
         pass
     
-    sprite = arcade.Sprite(os.path.join(join,"cloud1.png"),center_x = 600,center_y = 580)
-    tile = arcade.Sprite(os.path.join(join,"tile.png"),center_x = 400,center_y = 150)
-    tile1 = arcade.Sprite(os.path.join(join,"tile.png"),center_x = 400,center_y = 77)
-    back = arcade.load_texture(os.path.join(join,"backdrop.game.png"))
+    sprite = arcade.Sprite("../../SpriteLists/cloud1.png",center_x = 600,center_y = 580)
+    tile = arcade.Sprite("../../SpriteLists/tile.png",center_x = 400,center_y = 150)
+    tile1 = arcade.Sprite("../../SpriteLists/tile.png",center_x = 400,center_y = 77)
+    tile2 = arcade.Sprite("../../SpriteLists/tile.png",center_x = 400,center_y = 14)
+    back = arcade.load_texture("../../SpriteLists/backdrop.game.png")
+    tiles = arcade.SpriteList()
+    tiles.append(tile)
+    tiles.append(tile1)
+    tiles.append(tile2)
     
     spritelist = []
     walls = arcade.SpriteList()
-
+    
 
     
     #x_View = 0
@@ -161,37 +166,69 @@ class StartGame(arcade.View):
     change_x = 0
     change_y = 0
     movement_speed = 5
+    jump_speed = 10
     #RIGHT_Boundary = SCREEN_WIDTH
     #LEFT_Boundary = 40
     
     player_list = arcade.SpriteList()
     player = arcade.AnimatedWalkingSprite()
+    player.stand_right_textures = []
+    player.stand_left_textures = []
+    player.walk_left_textures = []
+    player.walk_right_textures = []
+    player.stand_left_textures.append(arcade.load_texture("../../SpriteLists/hero.1.stand.png",mirrored=True))
+    player.stand_right_textures.append(arcade.load_texture("../../SpriteLists/hero.1.stand.png"))
+    physics = None    
 
-    
+
+
+    for i in range(1,4):
+        player.walk_right_textures.append(arcade.load_texture(f"../../SpriteLists/hero.1.walk{i}.png"))
+        player.walk_left_textures.append(arcade.load_texture(f"../../SpriteLists/hero.1.walk{i}.png",mirrored=True))
+
+    player.center_x = SCREEN_WIDTH/2
+    player.center_y = SCREEN_WIDTH * 0.15
+    player.scale = 0.3
+    player_list.append(player)
     def setup(self):
         for i in range(0,800):
             if i % 40 == 0:
-                self.wall1 = arcade.Sprite(os.path.join(join,"wall1.png"),center_x = i + 20 ,center_y = 205)
-                self.wall2 = arcade.Sprite(os.path.join(join,"wall.png"),center_x = i + 20 ,center_y = 65)
+                self.wall1 = arcade.Sprite("../../SpriteLists/wall1.png",center_x = i + 20 ,center_y = 205)
+                self.wall2 = arcade.Sprite("../../SpriteLists/wall.png",center_x = i + 20 ,center_y = 14)
                 self.walls.append(self.wall1)
                 self.walls.append(self.wall2)
+                self.physics = arcade.PhysicsEngineSimple(self.player,self.walls)
+               
                 
 
     def on_show(self):
         arcade.set_background_color(arcade.color.SKY_BLUE)
         self.setup()
 
+
     def on_draw(self):
         arcade.start_render()
         arcade.draw_lrwh_rectangle_textured(0,0,SCREEN_WIDTH,SCREEN_HEIGHT,self.back)
         self.sprite.draw()
-        self.tile.draw()
-        self.tile1.draw()
+        self.tiles.draw()
         self.walls.draw()
-
+        self.player_list.draw()
+    def on_key_press(self,key,modifier):
+        if key == arcade.key.LEFT:
+            self.player.change_x = -self.movement_speed
+        if key == arcade.key.RIGHT:
+            self.player.change_x = self.movement_speed
+        if key == arcade.key.UP:
+            self.player.change_y = self.movement_speed
+        if key == arcade.key.DOWN:
+            self.player.change_y = -self.movement_speed
+    def on_key_release(self,key,modifier):
+        self.player.change_y = 0
+        self.player.change_x = 0
     def on_update(self,delta_time):
-        pass
-        
+        self.player_list.update()
+        self.player_list.update_animation() 
+        self.physics.update()       
         '''change = False 
         
         left = self.LEFT_Boundary + self.x_View
