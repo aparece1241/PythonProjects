@@ -81,16 +81,30 @@ class Button():
                 self.on_release()
 
 
+
+
+
+
+
 class MainMenu(arcade.View):
     def play():
         Window.show_view(StartGame())
         
-    Play = Button(305,260,150,50,arcade.color.AVOCADO,"Play",play,arcade.color.GREEN)
-    Help = Button(390,200,150,50,arcade.color.AVOCADO,"Help",None,arcade.color.GREEN)
-    Heroes = Button(485,260,150,50,arcade.color.AVOCADO,"Heroes",None,arcade.color.GREEN)
-    backdrop1 = arcade.Sprite("../../SpriteLists/zombie.png",center_x = 400,center_y = 400,scale = 0.8)
-    hero = arcade.Sprite("../../SpriteLists/hero.page.png",center_x = 680,center_y = 200)
-    zombie = arcade.Sprite("../../SpriteLists/zombie.page.png",center_x = 150,center_y = 150)
+    Play = Button(305,260,150,50,
+    arcade.color.AVOCADO,"Play",
+    play,arcade.color.GREEN)
+    Help = Button(390,200,150,50,
+    arcade.color.AVOCADO,"Help"
+    ,None,arcade.color.GREEN)
+    Heroes = Button(485,260,150,50,
+    arcade.color.AVOCADO,"Heroes",
+    None,arcade.color.GREEN)
+    backdrop1 = arcade.Sprite("../../SpriteLists/zombie.png"
+    ,center_x = 400,center_y = 400,scale = 0.8)
+    hero = arcade.Sprite("../../SpriteLists/hero.page.png"
+    ,center_x = 680,center_y = 200)
+    zombie = arcade.Sprite("../../SpriteLists/zombie.page.png"
+    ,center_x = 150,center_y = 150)
     background = arcade.SpriteList()
     button_list = []
     back = arcade.load_texture("../image/head.png")
@@ -138,15 +152,49 @@ class MainMenu(arcade.View):
         pass
 
             
+
+
+
+
+# class enemyAnimation():
+#     def __init__(self,center_x,center_y):
+#         self.center_x = center_x
+#         self.center_y = center_y
+#         self.enemy = None
+#         self.enemy_list = None
+#         self.lifepoints = 100
+#     def setup(self):
+#         self.enemy = arcade.AnimatedTimeSprite()
+#         self.enemy_list = arcade.SpriteList()
+#         self.enemy.textures = []
+#         for i in range(1,5):
+#             self.enemy.textures.append(arcade.load_texture(f"../../SpriteLists/z{i}.png"))
+        
+#         self.enemy.center_x =  self.center_x
+#         self.enemy.center_y = self.center_y
+#         self.enemy.scale = 0.3
+#         self.enemy.texture_change_frames = 20
+#         self.enemy_list.append(self.enemy)
+
+
+
+
+
+
+
+
+
 class StartGame(arcade.View):
-    def todo():
-        pass
-    def todo1():
-        pass
-    def todo2():
-        pass
+    # def todo():
+    #     pass
+    # def todo1():
+    #     pass
+    # def todo2():
+    #     pass
     
-    sprite = arcade.Sprite("../../SpriteLists/cloud1.png",center_x = 600,center_y = 580)
+
+    # enemy = enemyAnimation(100,SCREEN_WIDTH * 0.15)
+    cloud = arcade.Sprite("../../SpriteLists/cloud1.png",center_x = 600,center_y = 580)
     tile = arcade.Sprite("../../SpriteLists/tile.png",center_x = 400,center_y = 150)
     tile1 = arcade.Sprite("../../SpriteLists/tile.png",center_x = 400,center_y = 77)
     tile2 = arcade.Sprite("../../SpriteLists/tile.png",center_x = 400,center_y = 14)
@@ -155,11 +203,27 @@ class StartGame(arcade.View):
     tiles.append(tile)
     tiles.append(tile1)
     tiles.append(tile2)
-    
-    spritelist = []
-    walls = arcade.SpriteList()
+
+    #enemy
+    enemy = arcade.AnimatedTimeSprite()
+    enemy_list = arcade.SpriteList()
+    enemy.textures = []
+    #enemy coming from left side
+    for i in range(0,8):
+        enemy.textures.append(arcade.load_texture(f"../../SpriteLists/z{i}.png"))
+        
+    enemy.center_x = 100
+    enemy.center_y = SCREEN_HEIGHT * 0.15
+    enemy.scale = 0.3
+    enemy.texture_change_frames = 50
+    enemy_list.append(enemy)
     
 
+
+
+
+    spritelist = []
+    walls = arcade.SpriteList()
     
     #x_View = 0
     #y_View = 0
@@ -167,29 +231,44 @@ class StartGame(arcade.View):
     change_y = 0
     movement_speed = 5
     jump_speed = 10
+    att = False
     #RIGHT_Boundary = SCREEN_WIDTH
     #LEFT_Boundary = 40
     
+
     player_list = arcade.SpriteList()
+    attack = arcade.AnimatedWalkingSprite()
     player = arcade.AnimatedWalkingSprite()
     player.stand_right_textures = []
     player.stand_left_textures = []
     player.walk_left_textures = []
     player.walk_right_textures = []
-    player.stand_left_textures.append(arcade.load_texture("../../SpriteLists/hero.1.stand.png",mirrored=True))
-    player.stand_right_textures.append(arcade.load_texture("../../SpriteLists/hero.1.stand.png"))
-    physics = None    
+    player.stand_left_textures.append(arcade.load_texture("../../SpriteLists/hero.walk.0.png",mirrored=True))
+    player.stand_right_textures.append(arcade.load_texture("../../SpriteLists/hero.walk.0.png"))
+    attack.stand_left_textures.append(arcade.load_texture("../../SpriteLists/z1.png",mirrored=True))
+    attack.stand_right_textures.append(arcade.load_texture("../../SpriteLists/z1.png"))
+    physics = None   
+    attack.stand_left_textures=[]
+    attack.stand_right_textures=[]
+    attack.stand_left_textures.append(arcade.load_texture("../../SpriteLists/hero.fire.png"))
+    attack.stand_right_textures.append(arcade.load_texture("../../SpriteLists/hero.fire.png",mirrored=True))
+    
 
 
 
-    for i in range(1,4):
-        player.walk_right_textures.append(arcade.load_texture(f"../../SpriteLists/hero.1.walk{i}.png"))
-        player.walk_left_textures.append(arcade.load_texture(f"../../SpriteLists/hero.1.walk{i}.png",mirrored=True))
+
+
+
+    for i in range(0,5):
+        player.walk_right_textures.append(arcade.load_texture(f"../../SpriteLists/hero.walk.{i}.png"))
+        player.walk_left_textures.append(arcade.load_texture(f"../../SpriteLists/hero.walk.{i}.png",mirrored=True))
 
     player.center_x = SCREEN_WIDTH/2
     player.center_y = SCREEN_WIDTH * 0.15
     player.scale = 0.3
     player_list.append(player)
+
+
     def setup(self):
         for i in range(0,800):
             if i % 40 == 0:
@@ -198,21 +277,35 @@ class StartGame(arcade.View):
                 self.walls.append(self.wall1)
                 self.walls.append(self.wall2)
                 self.physics = arcade.PhysicsEngineSimple(self.player,self.walls)
-               
                 
+               
+    # def changes(self):
+    #     counter = 0
+    #     if self.change:
+    #         self.player_list.remove(self.player)
+    #         self.player_list.append(self.foo)
+    #         counter = 1
+    #     else:
+    #         if counter == 1:
+    #             self.player_list.remove(self.foo)
+    #             self.player_list.append(self.player)
+
+        
 
     def on_show(self):
         arcade.set_background_color(arcade.color.SKY_BLUE)
         self.setup()
 
+        
 
     def on_draw(self):
         arcade.start_render()
         arcade.draw_lrwh_rectangle_textured(0,0,SCREEN_WIDTH,SCREEN_HEIGHT,self.back)
-        self.sprite.draw()
+        self.cloud.draw()
         self.tiles.draw()
         self.walls.draw()
         self.player_list.draw()
+        self.enemy_list.draw()
     def on_key_press(self,key,modifier):
         if key == arcade.key.LEFT:
             self.player.change_x = -self.movement_speed
@@ -222,13 +315,39 @@ class StartGame(arcade.View):
             self.player.change_y = self.movement_speed
         if key == arcade.key.DOWN:
             self.player.change_y = -self.movement_speed
+        if key == arcade.key.A:
+            self.player_list.remove(self.player)
+            self.attack.scale = 0.5
+            self.attack.center_x = self.player.center_x
+            self.attack.center_y = self.player.center_y
+            self.player_list.append(self.attack)
+            self.att = True
     def on_key_release(self,key,modifier):
         self.player.change_y = 0
         self.player.change_x = 0
+        if key == arcade.key.A:
+            self.player_list.remove(self.attack)
+            self.player_list.append(self.player)
+            self.att = False
     def on_update(self,delta_time):
+        self.enemy_list.update()
+        self.enemy_list.update_animation()
         self.player_list.update()
         self.player_list.update_animation() 
-        self.physics.update()       
+        self.physics.update() 
+
+
+        #the running cloud 
+        if self.cloud.center_x < -100 :
+            self.cloud.center_x = 1000
+        else:
+            self.cloud.center_x -= 1
+        
+        if self.att :
+            self.attack.update()
+            self.attack.update_animation()
+
+            
         '''change = False 
         
         left = self.LEFT_Boundary + self.x_View
