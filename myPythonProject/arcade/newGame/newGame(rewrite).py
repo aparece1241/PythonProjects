@@ -1,8 +1,8 @@
 import arcade
 from time import sleep
-import random 
+import random
 
-SCREEN_WIDTH = 800
+SCREEN_WIDTH = 1000
 SCREEN_HEIGHT = 600
 SCREEN_TITLE = "NEW GAME"
  
@@ -83,12 +83,12 @@ class Button():
 
 
 class MainMenu(arcade.View):
-    def play():
+    def Start():
         Window.show_view(StartGame())
         
     Play = Button(305,260,150,50,
     arcade.color.AVOCADO,"Play",
-    play,arcade.color.GREEN)
+    Start,arcade.color.GREEN)
     Help = Button(390,200,150,50,
     arcade.color.AVOCADO,"Help"
     ,None,arcade.color.GREEN)
@@ -132,182 +132,192 @@ class MainMenu(arcade.View):
         for i in self.button_list: 
             i.check_mouse_release(x,y)
 
+    
 
-class StartGame(arcade.View):  
-    cloud = arcade.Sprite("../../SpriteLists/cloud1.png",center_x = 600,center_y = 580)
-    tile = arcade.Sprite("../../SpriteLists/tile.png",center_x = 400,center_y = 150)
-    tile1 = arcade.Sprite("../../SpriteLists/tile.png",center_x = 400,center_y = 77)
-    tile2 = arcade.Sprite("../../SpriteLists/tile.png",center_x = 400,center_y = 14)
-    back = arcade.load_texture("../../SpriteLists/backdrop.png")
-    tiles = arcade.SpriteList()
-    tiles.append(tile)
-    tiles.append(tile1)
-    tiles.append(tile2)
-
-    #enemy
-    enemy = arcade.AnimatedTimeSprite()
-    enemy_list = arcade.SpriteList()
-    enemy.textures = []
-    #enemy coming from left side
-    for i in range(0,8):
-        enemy.textures.append(arcade.load_texture(f"../../SpriteLists/z{i}.png"))
+class hero():
+    def __init__(self,life,name):
+        self.lifePoints = life
+        self.name = name
+        self.direction = None
+        self.movementSpeed = 5
         
-    enemy.center_x = 100
-    enemy.center_y = SCREEN_HEIGHT * 0.15
-    enemy.scale = 0.3
-    enemy.texture_change_frames = 20
-    
-    spritelist = []
-    walls = arcade.SpriteList()
-    
-    change_x = 0
-    change_y = 0
-    movement_speed = 5
-    enemy_speed = 0.5
-    number_of_enemy = 100
-    number_of_waves = 1
-    score = 0
-    killed = 100
-    
+        self.hero = arcade.AnimatedWalkingSprite()
+        self.hero_list = arcade.SpriteList()
 
-    player_list = arcade.SpriteList()
-    player = arcade.AnimatedWalkingSprite()
-    player.stand_right_textures = []
-    player.stand_left_textures = []
-    player.walk_left_textures = []
-    player.walk_right_textures = []
-    player.stand_left_textures.append(arcade.load_texture("../../SpriteLists/hero.walk.0.png",mirrored=True))
-    player.stand_right_textures.append(arcade.load_texture("../../SpriteLists/hero.walk.0.png"))
-    physics = None 
-    update_draw = True
-    
-    bullet_list = arcade.SpriteList()
-    bulletDirection = "R"
+        self.hero.stand_right_textures = []
+        self.hero.stand_left_textures = []
+        self.hero.walk_right_textures = []
+        self.hero.walk_left_textures = []
+        self.hero.stand_right_textures.append(arcade.load_texture("../../SpriteLists/hero.walk.0.png"))
+        self.hero.stand_left_textures.append(arcade.load_texture("../../SpriteLists/hero.walk.0.png",mirrored = True))
+        
+        for i in range(0,5):
+            self.hero.walk_right_textures.append(arcade.load_texture(f"../../SpriteLists/hero.walk.{i}.png"))
+            self.hero.walk_left_textures.append(arcade.load_texture(f"../../SpriteLists/hero.walk.{i}.png",mirrored = True))
+        self.hero.scale = 0.3
+        self.hero.center_x = SCREEN_WIDTH//2
+        self.hero.center_y = SCREEN_HEIGHT * 0.15
+        self.hero.texture_change_frames = 70
+        
+        self.hero_list.append(self.hero)
+    def move(self):
+        if self.direction == "LEFT":
+            self.hero.change_x = -self.movementSpeed
+            self.hero.change_y = 0
+        if self.direction == "RIGHT":
+            self.hero.change_x = self.movementSpeed
+            self.hero.change_y = 0
+        if self.direction == "DOWN":
+            self.hero.change_y = -self.movementSpeed
+            self.hero.change_x = 0
+        if self.direction == "UP":
+            self.hero.change_y = self.movementSpeed
+            self.hero.change_x = 0
 
 
-
-
-    for i in range(0,5):
-        player.walk_right_textures.append(arcade.load_texture(f"../../SpriteLists/hero.walk.{i}.png"))
-        player.walk_left_textures.append(arcade.load_texture(f"../../SpriteLists/hero.walk.{i}.png",mirrored=True))
-
-    player.center_x = SCREEN_WIDTH/2
-    player.center_y = SCREEN_WIDTH * 0.15
-    player.scale = 0.3
-    player_list.append(player)
-
-    enemy_list.append(enemy)
-    def setup(self):
-        for i in range(0,800):
-            if i % 40 == 0:
-                self.wall1 = arcade.Sprite("../../SpriteLists/wall1.png",center_x = i + 20 ,center_y = 205)
-                self.wall2 = arcade.Sprite("../../SpriteLists/wall.png",center_x = i + 20 ,center_y = 14)
-                self.walls.append(self.wall1)
-                self.walls.append(self.wall2)
-        self.physics = arcade.PhysicsEngineSimple(self.player,self.walls)
 
         
+    def update_hero(self):
+        self.hero_list.update()
+        self.hero_list.update_animation()
+        
+    def draw_hero(self):
+        self.update_hero()
+        self.hero_list.draw()
+        
+    def setDirection(self,newDirection):
+        self.direction = newDirection
+        
+    def setSpeed(self,newSpeed):
+        self.movementSpeed = newSpeed
+
+    def getHeroY(self):
+        return self.hero.center_y
+
+    def getHeroX(self):
+        return self.hero.center_x
+
+
+
+
+
+class Barrier():
+    def __init__(self,x,y):
+        self.barrier_list_up = arcade.SpriteList()
+        self.barrier_list_down = arcade.SpriteList()
+        self.barrier_list_up.append(arcade.Sprite("../../SpriteLists/barrier.png",center_x = 25,center_y = y))
+        for i in range(0,int(SCREEN_WIDTH/50)+4):
+            barrier = arcade.Sprite("../../SpriteLists/barrier.png",center_x = 25 + (i * 41.6) ,center_y = y)
+            self.barrier_list_up.append(barrier)
+            barrier1 = arcade.Sprite("../../SpriteLists/barrier.png",center_x = 25 + (i * 41.6),center_y = 20)
+            self.barrier_list_down.append(barrier1)
+            
+    def draw_wall_up(self):
+        self.barrier_list_up.draw()
+        
+    def draw_wall_down(self):
+        self.barrier_list_down.draw()
+
+    def getWalllistUp(self):
+        return self.barrier_list_up[0].center_y
+    
+    def getWalllistDown(self):
+        return self.barrier_list_down[0].center_y
+
+
+
+        
+    
+
+class StartGame(arcade.View):
+    Hero = hero(100,"Zkiller")
+    Barriers = Barrier(25,341)
+    backdrop = arcade.load_texture("../../SpriteLists/backdrop.png")
+    direction = ""
+    valueFor = 5
+    valueForX = 5
+    
+    def setupHeroBoundary(self,lowerYbarrier,upperYbarrier,heroY,leftXbarrier,rightXbarrier,heroX):
+        """ partial """
+        if heroY > upperYbarrier:
+            self.valueFor = 0
+            if self.direction == "DOWN":
+                self.Hero.setSpeed(self.valueForX)
+                self.valueFor = 5
+            if self.direction == "UP":
+                self.Hero.setSpeed(self.valueFor)
+                
+        if heroY < lowerYbarrier+50:
+            self.valueFor = 0
+            if self.direction == "UP":
+                self.valueFor = 5
+                self.Hero.setSpeed(self.valueForX)
+            if self.direction == "DOWN":
+                self.Hero.setSpeed(self.valueFor)
+
+        if heroX > rightXbarrier:
+            self.valueForX = 0
+            if self.direction == "LEFT":
+                self.Hero.setSpeed(self.valueFor)
+                self.valueForX = 5
+            if self.direction == "RIGHT":
+                self.Hero.setSpeed(self.valueForX)
+                
+        if heroX < leftXbarrier:
+            self.valueForX = 0
+            if self.direction == "RIGHT":
+                self.valueForX = 5
+                self.Hero.setSpeed(self.valueFor)
+            if self.direction == "LEFT":
+                self.Hero.setSpeed(self.valueForX)
+   
 
     def on_show(self):
-        arcade.set_background_color(arcade.color.SKY_BLUE)
-        self.setup()
-
-    
+        arcade.set_background_color((123,156,24,255))
+        
     def on_draw(self):
         arcade.start_render()
-        arcade.draw_lrwh_rectangle_textured(0,0,SCREEN_WIDTH,SCREEN_HEIGHT,self.back)
-        self.cloud.draw()
-        self.tiles.draw()
-        self.walls.draw()
-        self.player_list.draw()
-        self.bullet_list.draw()
-        self.enemy_list.draw()
-
-        arcade.draw_rectangle_filled(SCREEN_WIDTH//2,SCREEN_HEIGHT-20,SCREEN_WIDTH,50,color = (2,230,12,50))
-        arcade.draw_text_2(f"SCORE: {self.score}",SCREEN_WIDTH//2,550,color = (34,45,120,127))
-    def increase_number(self):
-        enemy = arcade.AnimatedTimeSprite()
-        for i in range(0,8):
-            enemy.textures.append(arcade.load_texture(f"../../SpriteLists/z{i}.png"))
-        enemy.center_x = -10
-        enemy.center_y = random.randrange(44,170)
-        enemy.scale = 0.3
-        enemy.texture_change_frames = 20
-        self.enemy_list.append(enemy)
-        self.enemy_list.update_animation()
+        arcade.draw_lrwh_rectangle_textured(0,0,SCREEN_WIDTH,SCREEN_HEIGHT,self.backdrop)
+        self.Barriers.draw_wall_up()
+        self.Hero.draw_hero()
+        self.Barriers.draw_wall_down()
+        
     
-
     def on_key_press(self,key,modifier):
         if key == arcade.key.LEFT:
-            self.player.change_x = -self.movement_speed
-            self.bulletDirection = "L"
+            self.Hero.setDirection("LEFT")
+            self.Hero.setSpeed(self.valueForX)
+            self.direction = "LEFT"
         if key == arcade.key.RIGHT:
-            self.player.change_x = self.movement_speed
-            self.bulletDirection = "R"
-        if key == arcade.key.UP:
-            self.player.change_y = self.movement_speed
+            self.Hero.setDirection("RIGHT")
+            self.Hero.setSpeed(self.valueForX)
+            self.direction = "RIGHT"
         if key == arcade.key.DOWN:
-            self.player.change_y = -self.movement_speed
-        if key == arcade.key.A:
-            bullet = arcade.Sprite("../../SpriteLists/bullet.png")
-            bullet.scale = 0.5
-            if self.bulletDirection == "L":
-                bullet.change_x = -5
-                bullet.center_x = self.player.left
-                bullet.center_y = self.player.center_y
-            else:
-                bullet.angle = 180
-                bullet.change_x = 5
-                bullet.center_x = self.player.right
-                bullet.center_y = self.player.center_y
-            
-            self.bullet_list.append(bullet)
+            self.Hero.setDirection("DOWN")
+            self.Hero.setSpeed(self.valueFor)
+            self.direction = "DOWN"
+        if key == arcade.key.UP:
+           self.Hero.setDirection("UP")
+           self.Hero.setSpeed(self.valueFor)
+           self.direction = "UP"
+           
 
     def on_key_release(self,key,modifier):
-        self.player.change_y = 0
-        self.player.change_x = 0
+        self.Hero.setSpeed(0)
         
 
 
 
     def on_update(self,delta_time):
-        self.enemy_list.update()
-        self.enemy_list.update_animation()
-        self.player_list.update()
-        self.player_list.update_animation() 
-        self.physics.update()
-
-        self.enemy_list.move(0.5,0)
+        self.Hero.update_hero()
+        self.Hero.move()
+        self.setupHeroBoundary(self.Barriers.getWalllistDown(),
+                                  self.Barriers.getWalllistUp(),
+                                  self.Hero.getHeroY(),50,SCREEN_WIDTH - 50
+                                  ,self.Hero.getHeroX())
         
-
         
-        #the running cloud 
-        if self.cloud.center_x < -100 :
-            self.cloud.center_x = 1000
-        else:
-            self.cloud.center_x -= 1
-            
-        self.bullet_list.update()
-
-        #To set the speed of the bullet
-        for bullet in self.bullet_list:
-            if bullet.center_x < -9:
-                bullet.remove_from_sprite_lists()
-            if arcade.check_for_collision_with_list(bullet,self.enemy_list):
-                for enemy in self.enemy_list:
-                    if arcade.check_for_collision(bullet,enemy):
-                        bullet.kill()
-                        enemy.kill()
-                        self.score += 1
-                        if self.score == self.killed:
-                            self.number_of_waves += 1
-                            self.killed *= self.number_of_waves
-                        for i in range(self.number_of_waves):
-                            self.increase_number()
-                
-                
-                
-                
+                        
 
 
 
