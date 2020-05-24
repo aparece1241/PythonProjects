@@ -1,3 +1,4 @@
+
 import arcade
 from time import sleep
 import random 
@@ -272,7 +273,7 @@ class StartGame(arcade.View):
 
     def on_update(self,delta_time):
         self.enemy_list.update()
-        self.enemy_list.update_animation()
+        # self.enemy_list.update_animation()
         self.player_list.update()
         self.player_list.update_animation() 
         self.physics.update()

@@ -135,6 +135,7 @@ class MainMenu(arcade.View):
     
 
 class hero():
+
     def __init__(self,life,name):
         self.lifePoints = life
         self.name = name
@@ -150,7 +151,8 @@ class hero():
         self.hero.walk_left_textures = []
         self.hero.stand_right_textures.append(arcade.load_texture("../../SpriteLists/hero.walk.0.png"))
         self.hero.stand_left_textures.append(arcade.load_texture("../../SpriteLists/hero.walk.0.png",mirrored = True))
-        
+
+        self.bullet_direction = "RIGHT"
         for i in range(0,5):
             self.hero.walk_right_textures.append(arcade.load_texture(f"../../SpriteLists/hero.walk.{i}.png"))
             self.hero.walk_left_textures.append(arcade.load_texture(f"../../SpriteLists/hero.walk.{i}.png",mirrored = True))
@@ -160,13 +162,16 @@ class hero():
         self.hero.texture_change_frames = 70
         
         self.hero_list.append(self.hero)
+        self.hero_bullet = arcade.SpriteList()
     def move(self):
         if self.direction == "LEFT":
             self.hero.change_x = -self.movementSpeed
             self.hero.change_y = 0
+            self.bullet_direction = self.direction
         if self.direction == "RIGHT":
             self.hero.change_x = self.movementSpeed
             self.hero.change_y = 0
+            self.bullet_direction = self.direction
         if self.direction == "DOWN":
             self.hero.change_y = -self.movementSpeed
             self.hero.change_x = 0
@@ -196,6 +201,71 @@ class hero():
 
     def getHeroX(self):
         return self.hero.center_x
+
+    def hero_attact(self):
+        bullet = arcade.Sprite("../../SpriteLists/bullet.png")
+        bullet.scale = 0.3
+
+        bullet.change_x = -5
+        bullet.center_x = self.hero.left
+        bullet.center_y = self.hero.center_y
+        if self.bullet_direction == "RIGHT":
+            bullet.angle = 180
+            bullet.center_x = self.hero.right
+            bullet.change_x = 5
+
+        self.hero_bullet.append(bullet)
+    def bulletUpadate(self):
+        self.hero_bullet.update()
+
+    def bulletDraw(self):
+        self.hero_bullet.draw()
+
+    def bulletCheck(self):
+        for bullet in self.hero_bullet:
+
+            if bullet.center_x < 0 or bullet.center_x > SCREEN_WIDTH:
+                bullet.kill()
+            # if arcade.check_for_collision_with_list(bullet,enemy):
+            #     bullet.kill()
+
+    def getBullets(self):
+        return self.hero_bullet
+
+
+
+class Enemy():
+    def __iniy__(self,lifePoints,name,lowerBarrier,upperBarrier):
+        self.name = name
+        self.lifePoints = lifePoints
+        self.enemy_list = arcade.SpriteList()
+        self.lower = lowerBarrier
+        self.upper = upperBarrier
+
+    def initializedEnemy(self):
+        enemy = arcade.AnimatedTimeSprite()
+        for i in range(0,8):
+            enemy.textures.append(arcade.load_texture(f"../../SpriteLists/z{i}.png"))
+        enemy.center_x = -10
+        enemy.center_y = random.randrange(self.lower+20,self.upper - 20)
+        enemy.scale = 0.3
+        self.enemy_list.append(enemy)
+
+    def drawEnemy(self):
+        self.enemy_list.draw()
+
+    def checkEnemy(self,bullet):
+        for enemy in self.enemy_list:
+            if arcade.check_for_collision_with_list(enemy,bullet):
+                enemy.kill()
+    def getEnemy(self):
+        return self.enemy_list
+
+
+
+
+
+
 
 
 
@@ -281,6 +351,7 @@ class StartGame(arcade.View):
         self.Barriers.draw_wall_up()
         self.Hero.draw_hero()
         self.Barriers.draw_wall_down()
+        self.Hero.bulletDraw()
         
     
     def on_key_press(self,key,modifier):
@@ -300,7 +371,8 @@ class StartGame(arcade.View):
            self.Hero.setDirection("UP")
            self.Hero.setSpeed(self.valueFor)
            self.direction = "UP"
-           
+        if key == arcade.key.A:
+            self.Hero.hero_attact()
 
     def on_key_release(self,key,modifier):
         self.Hero.setSpeed(0)
@@ -313,12 +385,11 @@ class StartGame(arcade.View):
         self.Hero.move()
         self.setupHeroBoundary(self.Barriers.getWalllistDown(),
                                   self.Barriers.getWalllistUp(),
-                                  self.Hero.getHeroY(),50,SCREEN_WIDTH - 50
-                                  ,self.Hero.getHeroX())
+                                  self.Hero.getHeroY(),50,SCREEN_WIDTH - 50,
+                                  self.Hero.getHeroX())
         
-        
-                        
-
+        self.Hero.bulletUpadate()
+        self.Hero.bulletCheck()
 
 
         '''change = False 
