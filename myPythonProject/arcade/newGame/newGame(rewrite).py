@@ -3,21 +3,22 @@ import random
 import json
 import os
 
+
 SCREEN_WIDTH = 1000
 SCREEN_HEIGHT = 600
 SCREEN_TITLE = "NEW GAME"
 FIRTTIME_RUN = True
 
 
-gamedata = []
+gamedata = {}
 def readFile():
     with open("gameData.txt","r") as read:
         data = json.load(read)
         return data
 
-def writeFile():
+def writeFile(data = gamedata):
     with open("gameData.txt","w") as create:
-        json.dump(gamedata, create)
+        json.dump(data, create)
 
 def CheckFileExist():
     if os.path.exists("gameData.txt"):
@@ -25,6 +26,7 @@ def CheckFileExist():
     else:
         writeFile()
 
+CheckFileExist()
 
 
 class Button():
@@ -110,6 +112,14 @@ def Main():
 
 def Instruct():
     Window.show_view(Introduction())
+
+
+class GameOver(arcade.View):
+    def on_show(self):
+        arcade.set_background_color(arcade.color.AVOCADO)
+
+    def on_draw(self):
+        arcade.start_render()
 
 
 class Introduction(arcade.View):
@@ -267,6 +277,9 @@ class hero():
     def getHeroX(self):
         return self.hero.center_x
 
+    def getHero(self):
+        return self.hero
+
     def hero_attact(self):
         bullet = arcade.Sprite("../../SpriteLists/bullet.png")
         bullet.scale = 0.3
@@ -298,6 +311,11 @@ class hero():
     def getBulletDamage(self):
         return self.bullet_damage
 
+    def getLifePoints(self):
+        return self.lifePoints
+
+    def setlLifePoints(self,newLife):
+        self.lifePoints = newLife
 
 
 
@@ -310,6 +328,7 @@ class Enemy():
         self.lower = lowerBarrier
         self.upper = upperBarrier
         self.enemyLifeDict = {}
+        self.enemyDamage = 5
 
 
         enemy = arcade.AnimatedTimeSprite()
@@ -333,23 +352,35 @@ class Enemy():
         self.enemy_list.update()
         self.enemy_list.update_animation()
 
-    def find(self,enemy,HeroY):
+
+    def setChange(self, enemy):
+        if enemy.originalPosition == "RIGHT":
+            enemy.change_x = -0.5
+        elif enemy.originalPosition == "LEFT":
+            enemy.change_x = 0.5
+
+    def find(self,enemy,HeroY,HeroX):
         if enemy.center_y > HeroY:
             enemy.change_y = -0.5
+            self.setChange(enemy)
         if enemy.center_y < HeroY:
             enemy.change_y = 0.5
-        if enemy.center_y == HeroY:
+            self.setChange(enemy)
+        if enemy.center_y == HeroY and enemy.center_x == HeroX:
             enemy.change_y = 0
+            enemy.change_x = 0
 
-    def newUpdate(self,HeroY : int ):
+
+
+    def newUpdate(self,HeroY : int ,HeroX : int):
 
         for enemy in self.enemy_list:
             if enemy.originalPosition == "RIGHT":
                 if enemy.center_x < 800:
-                    self.find(enemy,HeroY)
+                    self.find(enemy,HeroY,HeroX)
             if enemy.originalPosition == "LEFT":
                 if enemy.center_x > 100:
-                    self.find(enemy, HeroY)
+                    self.find(enemy, HeroY,HeroX)
 
 
     def defineXLocation(self):
@@ -478,7 +509,9 @@ class StartGame(arcade.View):
         arcade.start_render()
         arcade.draw_lrwh_rectangle_textured(0,0,SCREEN_WIDTH,SCREEN_HEIGHT,self.backdrop)
         arcade.draw_rectangle_filled(SCREEN_WIDTH/2,SCREEN_HEIGHT-50,SCREEN_WIDTH,100,(127,212,23,127))
-        arcade.draw_text_2(f"score:{self.score}",100,SCREEN_HEIGHT - 100,arcade.color.WHITE,15,align="center")
+        arcade.draw_text_2(f"score:{self.score}",50,SCREEN_HEIGHT - 20,arcade.color.WHITE,15,align="center")
+        arcade.draw_text_2(f"wave:{self.wave}", 50, SCREEN_HEIGHT - 70, arcade.color.WHITE, 15, align="center")
+        arcade.draw_text_2(f"life:{self.Hero.getLifePoints()}", 400, SCREEN_HEIGHT - 20, arcade.color.WHITE, 15, align="center")
         self.Barriers.draw_wall_up()
         self.Hero.draw_hero()
         self.Enemys.drawEnemy()
@@ -520,6 +553,24 @@ class StartGame(arcade.View):
                     if self.Enemys.getEnemyLife()[enemy] == 0:
                         enemy.kill()
                         self.score += 1
+        for enemy in enemys:
+            if arcade.check_for_collision(enemy,self.Hero.getHero()):
+                newlifes = self.Hero.getLifePoints() - self.Enemys.enemyDamage
+                self.Hero.setlLifePoints(newlifes)
+                self.score += 1
+                enemy.kill()
+
+
+
+    def checkHero(self):
+        if self.Hero.getLifePoints() == 0:
+            Window.show_view(GameOver())
+
+    def checkEnemys(self):
+        if len(self.Enemys.getEnemy())  == 0:
+            self.wave += 1
+            self.Enemys.enemyIncrease(self.wave)
+            self.Enemys.enemyUpdate()
 
 
     def on_update(self,delta_time):
@@ -531,12 +582,15 @@ class StartGame(arcade.View):
                                   self.Hero.getHeroX())
 
 
+
+        self.Enemys.newUpdate(self.Hero.getHeroY(),self.Hero.getHeroX())
         self.Enemys.enemyUpdate()
-        self.Enemys.newUpdate(self.Hero.getHeroY())
         self.Hero.bulletUpadate()
 
         self.checkCollision(self.Enemys.getEnemy(),self.Hero.getBullets())
         self.Hero.bulletCheck()
+        self.checkHero()
+        self.checkEnemys()
 
 
         '''change = False 
