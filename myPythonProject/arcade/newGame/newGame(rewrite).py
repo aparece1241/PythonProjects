@@ -1,11 +1,32 @@
 import arcade
-from time import sleep
 import random
+import json
+import os
 
 SCREEN_WIDTH = 1000
 SCREEN_HEIGHT = 600
 SCREEN_TITLE = "NEW GAME"
- 
+FIRTTIME_RUN = True
+
+
+gamedata = []
+def readFile():
+    with open("gameData.txt","r") as read:
+        data = json.load(read)
+        return data
+
+def writeFile():
+    with open("gameData.txt","w") as create:
+        json.dump(gamedata, create)
+
+def CheckFileExist():
+    if os.path.exists("gameData.txt"):
+        print(readFile())
+    else:
+        writeFile()
+
+
+
 class Button():
     def __init__(self,center_x,center_y,width,height,
                  color,text,function,text_color,tilt_angle = 0):
@@ -54,7 +75,9 @@ class Button():
         arcade.draw_line(self.center_x - self.width/2,self.center_y - self.height/2,
                          self.center_x + self.width/2,self.center_y - self.height/2,
                          self.shadow_color1,2)
-        
+
+    def draw_circle_button(self):
+        pass
         
         
     def on_press(self):
@@ -63,7 +86,7 @@ class Button():
         self.color = (188, 190, 194)
     def on_release(self):
         self.shadow_color1 = arcade.color.DARK_GRAY
-        self.shadow_color2 =arcade.color.WHITE
+        self.shadow_color2 = arcade.color.WHITE
         self.color = self.defualt
 
     def check_mouse_press(self,x,y):
@@ -73,22 +96,64 @@ class Button():
     def check_mouse_release(self,x,y):
         if x > self.center_x - self.width/2 and x < self.center_x + self.width/2 :
             if y > self.center_y - self.height/2 and y < self.center_y + self.height/2 :
-                self.function()
                 self.on_release()
+                if self.function != None:
+                    self.function()
 
 
 
+def Start():
+    Window.show_view(StartGame())
+
+def Main():
+    Window.show_view(MainMenu())
+
+def Instruct():
+    Window.show_view(Introduction())
+
+
+class Introduction(arcade.View):
+    back = Button(100, 80, 100, 50, arcade.color.GRAY, "Back", None, arcade.color.WHITE)
+    play = Button(SCREEN_WIDTH - 100, 80, 100, 50, arcade.color.GRAY, "Play", Start, arcade.color.WHITE)
+    arrowButtonList = []
+    def messageDisplay(self):
+        arcade.draw_rectangle_filled(SCREEN_WIDTH/2,SCREEN_HEIGHT/2,500,420,(110,100,20,50))
+        arcade.draw_text_2("Controls :", 300, 470, arcade.color.WHITE, 20)
+        arcade.draw_text_2("To move your hero use the", 300, 420, arcade.color.WHITE, 20)
+        arcade.draw_text_2("arrow keys. ", 300, 370, arcade.color.WHITE, 20)
+        arcade.draw_text_2("To attack use the 'A' key to attack", 300, 320, arcade.color.WHITE, 20)
+        arcade.draw_text_2("Goal :", 300, 270, arcade.color.WHITE, 20)
+        arcade.draw_text_2( "Dont be killed !!!", 300, 220, arcade.color.WHITE, 20)
+
+    def on_show (self):
+        arcade.set_background_color(arcade.color.AVOCADO)
+        self.arrowButtonList.append(self.play)
+        self.arrowButtonList.append(self.back)
+
+    def on_draw (self):
+        arcade.start_render()
+        self.play.draw_button()
+        self.back.draw_button()
+        arcade.draw_text_2("User Guide", 425, 550, arcade.color.BLACK, 20, bold=True)
+        self.messageDisplay()
+
+    def on_mouse_press(self, x: float, y: float, button: int, modifiers: int):
+        for button in self.arrowButtonList:
+            button.check_mouse_press(x,y)
+    def on_mouse_release(self, x: float, y: float, button: int,
+                         modifiers: int):
+        for button in self.arrowButtonList:
+            button.check_mouse_release(x,y)
 
 
 
 
 class MainMenu(arcade.View):
-    def Start():
-        Window.show_view(StartGame())
+
         
     Play = Button(305,260,150,50,
     arcade.color.AVOCADO,"Play",
-    Start,arcade.color.GREEN)
+    Instruct,arcade.color.GREEN)
     Help = Button(390,200,150,50,
     arcade.color.AVOCADO,"Help"
     ,None,arcade.color.GREEN)
@@ -141,6 +206,7 @@ class hero():
         self.name = name
         self.direction = None
         self.movementSpeed = 5
+        self.bullet_damage = 20
         
         self.hero = arcade.AnimatedWalkingSprite()
         self.hero_list = arcade.SpriteList()
@@ -163,6 +229,7 @@ class hero():
         
         self.hero_list.append(self.hero)
         self.hero_bullet = arcade.SpriteList()
+
     def move(self):
         if self.direction == "LEFT":
             self.hero.change_x = -self.movementSpeed
@@ -180,8 +247,6 @@ class hero():
             self.hero.change_x = 0
 
 
-
-        
     def update_hero(self):
         self.hero_list.update()
         self.hero_list.update_animation()
@@ -223,53 +288,115 @@ class hero():
 
     def bulletCheck(self):
         for bullet in self.hero_bullet:
-
             if bullet.center_x < 0 or bullet.center_x > SCREEN_WIDTH:
                 bullet.kill()
-            # if arcade.check_for_collision_with_list(bullet,enemy):
-            #     bullet.kill()
+
 
     def getBullets(self):
         return self.hero_bullet
 
+    def getBulletDamage(self):
+        return self.bullet_damage
+
+
+
 
 
 class Enemy():
-    def __iniy__(self,lifePoints,name,lowerBarrier,upperBarrier):
+    def __init__(self,lifePoints,name,lowerBarrier,upperBarrier):
         self.name = name
         self.lifePoints = lifePoints
         self.enemy_list = arcade.SpriteList()
         self.lower = lowerBarrier
         self.upper = upperBarrier
+        self.enemyLifeDict = {}
 
-    def initializedEnemy(self):
+
         enemy = arcade.AnimatedTimeSprite()
         for i in range(0,8):
             enemy.textures.append(arcade.load_texture(f"../../SpriteLists/z{i}.png"))
-        enemy.center_x = -10
+
+        enemy.center_x = enemy.center_x = random.choice([-10,SCREEN_WIDTH + 20])
         enemy.center_y = random.randrange(self.lower+20,self.upper - 20)
         enemy.scale = 0.3
-        self.enemy_list.append(enemy)
+        enemy.change_x = 0.5
 
+        self.enemy_list.append(enemy)
+        self.enemyLifeDict = {}
     def drawEnemy(self):
         self.enemy_list.draw()
 
-    def checkEnemy(self,bullet):
-        for enemy in self.enemy_list:
-            if arcade.check_for_collision_with_list(enemy,bullet):
-                enemy.kill()
     def getEnemy(self):
         return self.enemy_list
 
+    def enemyUpdate(self):
+        self.enemy_list.update()
+        self.enemy_list.update_animation()
+
+    def find(self,enemy,HeroY):
+        if enemy.center_y > HeroY:
+            enemy.change_y = -0.5
+        if enemy.center_y < HeroY:
+            enemy.change_y = 0.5
+        if enemy.center_y == HeroY:
+            enemy.change_y = 0
+
+    def newUpdate(self,HeroY : int ):
+
+        for enemy in self.enemy_list:
+            if enemy.originalPosition == "RIGHT":
+                if enemy.center_x < 800:
+                    self.find(enemy,HeroY)
+            if enemy.originalPosition == "LEFT":
+                if enemy.center_x > 100:
+                    self.find(enemy, HeroY)
 
 
+    def defineXLocation(self):
+        for i in range(len(self.enemy_list)):
+            if self.enemy_list[i].originalPosition == "LEFT":
+                self.enemy_list[i].center_x = -50 * i
+            if self.enemy_list[i].originalPosition == "RIGHT":
+                self.enemy_list[i].center_x = SCREEN_WIDTH + (50*(i+1))
 
+    def setTexture(self):
+        enemy = arcade.AnimatedTimeSprite()
+        for i in range(0,8):
+            enemy.textures.append(arcade.load_texture(f"../../SpriteLists/z{i}.png",mirrored=True))
+        enemy.scale = 0.3
+        enemy.change_x = -0.5
+        enemy.center_y = random.randrange(self.lower + 20, self.upper - 20)
+        enemy.originalPosition = "RIGHT"
+        return enemy
 
+    def addLifePoints(self):
+        for enemy in self.enemy_list:
+            self.enemyLifeDict[enemy] = self.lifePoints
 
+    def enemyIncrease(self,level):
+        waves = level * 5
 
+        for wave in range(waves):
+            enemy = arcade.AnimatedTimeSprite()
+            for i in range(0, 8):
+                enemy.textures.append(arcade.load_texture(f"../../SpriteLists/z{i}.png"))
+            enemy.center_x = random.choice([-10,SCREEN_WIDTH + 20])
+            enemy.change_x = 0.5
+            enemy.center_y = random.randrange(self.lower + 20, self.upper - 20)
+            enemy.scale = 0.3
 
+            if enemy.center_x > 0:
+                self.enemy_list.append(self.setTexture())
+            self.enemy_list.append(enemy)
 
+            self.addLifePoints()
+            self.defineXLocation()
 
+    def getEnemyLife(self):
+        return self.enemyLifeDict
+
+    def setEnemyLife(self, newLife,enemy):
+        self.enemyLifeDict[enemy] = newLife
 
 class Barrier():
     def __init__(self,x,y):
@@ -295,19 +422,20 @@ class Barrier():
         return self.barrier_list_down[0].center_y
 
 
-
-        
     
 
 class StartGame(arcade.View):
     Hero = hero(100,"Zkiller")
     Barriers = Barrier(25,341)
+    Enemys = Enemy(100,"Enemy",Barriers.getWalllistDown(),Barriers.getWalllistUp())
     backdrop = arcade.load_texture("../../SpriteLists/backdrop.png")
     direction = ""
     valueFor = 5
     valueForX = 5
+    wave = 1
+    score = 0
     
-    def setupHeroBoundary(self,lowerYbarrier,upperYbarrier,heroY,leftXbarrier,rightXbarrier,heroX):
+    def setupHeroBoundary(self, lowerYbarrier, upperYbarrier  , heroY, leftXbarrier ,rightXbarrier , heroX):
         """ partial """
         if heroY > upperYbarrier:
             self.valueFor = 0
@@ -344,12 +472,16 @@ class StartGame(arcade.View):
 
     def on_show(self):
         arcade.set_background_color((123,156,24,255))
+        self.Enemys.enemyIncrease(self.wave)
         
     def on_draw(self):
         arcade.start_render()
         arcade.draw_lrwh_rectangle_textured(0,0,SCREEN_WIDTH,SCREEN_HEIGHT,self.backdrop)
+        arcade.draw_rectangle_filled(SCREEN_WIDTH/2,SCREEN_HEIGHT-50,SCREEN_WIDTH,100,(127,212,23,127))
+        arcade.draw_text_2(f"score:{self.score}",100,SCREEN_HEIGHT - 100,arcade.color.WHITE,15,align="center")
         self.Barriers.draw_wall_up()
         self.Hero.draw_hero()
+        self.Enemys.drawEnemy()
         self.Barriers.draw_wall_down()
         self.Hero.bulletDraw()
         
@@ -376,8 +508,18 @@ class StartGame(arcade.View):
 
     def on_key_release(self,key,modifier):
         self.Hero.setSpeed(0)
-        
 
+    def checkCollision(self,enemys,bullets):
+        print(len(enemys))
+        for bullet in bullets:
+            for enemy in enemys:
+                if arcade.check_for_collision(enemy,bullet):
+                    bullet.kill()
+                    newlife = self.Enemys.getEnemyLife()[enemy] - self.Hero.getBulletDamage()
+                    self.Enemys.setEnemyLife(newlife,enemy)
+                    if self.Enemys.getEnemyLife()[enemy] == 0:
+                        enemy.kill()
+                        self.score += 1
 
 
     def on_update(self,delta_time):
@@ -387,8 +529,13 @@ class StartGame(arcade.View):
                                   self.Barriers.getWalllistUp(),
                                   self.Hero.getHeroY(),50,SCREEN_WIDTH - 50,
                                   self.Hero.getHeroX())
-        
+
+
+        self.Enemys.enemyUpdate()
+        self.Enemys.newUpdate(self.Hero.getHeroY())
         self.Hero.bulletUpadate()
+
+        self.checkCollision(self.Enemys.getEnemy(),self.Hero.getBullets())
         self.Hero.bulletCheck()
 
 
