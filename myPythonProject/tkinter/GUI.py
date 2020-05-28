@@ -1,7 +1,6 @@
 from tkinter import *
 import json
 from os import path
-import snake
 
 ########DATA AND FUNCTION ######
 Screen = Tk()

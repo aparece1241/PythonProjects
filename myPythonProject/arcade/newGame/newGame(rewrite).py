@@ -1,3 +1,4 @@
+from tkinter import *
 import arcade
 import random
 import json
@@ -10,7 +11,8 @@ SCREEN_TITLE = "NEW GAME"
 FIRTTIME_RUN = True
 
 
-gamedata = {}
+gamedata = [{"name" : "", "score" : int ,"waves" : int }]
+
 def readFile():
     with open("gameData.txt","r") as read:
         data = json.load(read)
@@ -27,6 +29,25 @@ def CheckFileExist():
         writeFile()
 
 CheckFileExist()
+def getValue(UserInput):
+    return UserInput
+
+
+def get_input():
+    Pop_up = Tk()
+    Pop_up.title("Input")
+    Pop_up.resizable = False
+    L1 = Label(Pop_up,text = "Enter your name")
+    L1.place(x = 55,y = 80)
+    L2 = Label(Pop_up, text="Congratulation !")
+    L2.place(x = 50,y = 20)
+    E1 = Entry(Pop_up,fg = "green")
+    E1.place(x = 40,y = 100)
+    B1 = Button(Pop_up,text="submit",command= lambda : getValue(E1.get()))
+    B1.place(x = 70,y=120)
+    Pop_up.mainloop()
+
+get_input()
 
 
 class Button():
@@ -115,12 +136,26 @@ def Instruct():
 
 
 class GameOver(arcade.View):
+    Back = Button(400, 150, 120, 50, arcade.color.GRAY, "Back", Main, arcade.color.BLACK)
+    Replay = Button(SCREEN_WIDTH - 400, 150, 120, 50, arcade.color.GRAY, "Replay", Start, arcade.color.BLACK)
+    Button_list = []
     def on_show(self):
         arcade.set_background_color(arcade.color.AVOCADO)
+        self.Button_list.append(self.Back)
+        self.Button_list.append(self.Replay)
 
     def on_draw(self):
         arcade.start_render()
+        arcade.draw_text_2("Game Over!", 320, SCREEN_HEIGHT/2, arcade.color.BLACK, 40, bold=True)
+        self.Back.draw_button()
+        self.Replay.draw_button()
 
+    def on_mouse_press(self, x: float, y: float, button: int, modifiers: int):
+        for button in self.Button_list:
+            button.check_mouse_press(x,y)
+    def on_mouse_release(self, x: float, y: float, button: int, modifiers: int):
+        for button in self.Button_list:
+            button.check_mouse_release(x,y)
 
 class Introduction(arcade.View):
     back = Button(100, 80, 100, 50, arcade.color.GRAY, "Back", None, arcade.color.WHITE)
@@ -429,6 +464,9 @@ class Enemy():
     def setEnemyLife(self, newLife,enemy):
         self.enemyLifeDict[enemy] = newLife
 
+    def setEnemy(self,newValue):
+        self.enemy_list = newValue
+
 class Barrier():
     def __init__(self,x,y):
         self.barrier_list_up = arcade.SpriteList()
@@ -564,6 +602,10 @@ class StartGame(arcade.View):
 
     def checkHero(self):
         if self.Hero.getLifePoints() == 0:
+            self.Enemys.setEnemy(arcade.SpriteList())
+            self.wave = 1
+            self.score = 0
+            self.Hero.setlLifePoints(100)
             Window.show_view(GameOver())
 
     def checkEnemys(self):
@@ -614,7 +656,7 @@ class StartGame(arcade.View):
 
 
 Window = arcade.Window(SCREEN_WIDTH,SCREEN_HEIGHT,SCREEN_TITLE)
-Window.show_view(MainMenu())
+Window.show_view(GameOver())
 arcade.run()
 
 
