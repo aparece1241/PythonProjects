@@ -11,46 +11,81 @@ SCREEN_TITLE = "NEW GAME"
 FIRTTIME_RUN = True
 
 
-gamedata = [{"name" : "", "score" : int ,"waves" : int }]
+gamedata = [{"name" : "", "score" : 0 ,"waves" : 0 },
+            {"name" : "", "score" : 0 ,"waves" : 0 },
+            {"name" : "", "score" : 0 ,"waves" : 0 },
+            {"name" : "", "score" : 0 ,"waves" : 0 },
+            {"name" : "", "score" : 0 ,"waves" : 0 }
+            ]
+NAME = ""
+DATAS = ""
+
 
 def readFile():
-    with open("gameData.txt","r") as read:
+    with open("gameData.txt", "r") as read:
         data = json.load(read)
         return data
 
-def writeFile(data = gamedata):
-    with open("gameData.txt","w") as create:
+
+def writeFile(data= gamedata):
+    with open("gameData.txt", "w") as create:
         json.dump(data, create)
+
 
 def CheckFileExist():
     if os.path.exists("gameData.txt"):
-        print(readFile())
+        global DATAS
+        DATAS = readFile()
     else:
         writeFile()
 
-CheckFileExist()
-def getValue(UserInput):
-    return UserInput
 
+CheckFileExist()
+
+
+def getValue(Pop_up,UserInput):
+    global NAME
+    NAME = UserInput.get()
+    Pop_up.destroy()
 
 def get_input():
     Pop_up = Tk()
     Pop_up.title("Input")
     Pop_up.resizable = False
-    L1 = Label(Pop_up,text = "Enter your name")
-    L1.place(x = 55,y = 80)
-    L2 = Label(Pop_up, text="Congratulation !")
-    L2.place(x = 50,y = 20)
-    E1 = Entry(Pop_up,fg = "green")
-    E1.place(x = 40,y = 100)
-    B1 = Button(Pop_up,text="submit",command= lambda : getValue(E1.get()))
-    B1.place(x = 70,y=120)
+    L1 = Label(Pop_up, text="Enter your name")
+    L1.place(x=55, y=80)
+    L2 = Label(Pop_up, text="To Start The Game please")
+    L2.place(x=36, y=20)
+    E1 = Entry(Pop_up, fg="green")
+    E1.place(x=40, y=100)
+    B1 = Button(Pop_up, text="submit", command=lambda: getValue(Pop_up,E1))
+    B1.place(x=70, y=120)
     Pop_up.mainloop()
 
 get_input()
 
+class Record():
 
-class Button():
+
+
+    def getHighScore(self,score,wave):
+        for data in DATAS:
+            print(data["score"])
+            if data["score"] < score:
+                data["name"] = NAME
+                data["score"] = score
+                data["waves"] = wave
+                print("data :",DATAS)
+                writeFile(DATAS)
+                readFile()
+                break
+
+
+
+
+
+
+class Buttons():
     def __init__(self,center_x,center_y,width,height,
                  color,text,function,text_color,tilt_angle = 0):
         self.center_x = center_x
@@ -134,10 +169,13 @@ def Main():
 def Instruct():
     Window.show_view(Introduction())
 
+def Exit():
+    exit()
+
 
 class GameOver(arcade.View):
-    Back = Button(400, 150, 120, 50, arcade.color.GRAY, "Back", Main, arcade.color.BLACK)
-    Replay = Button(SCREEN_WIDTH - 400, 150, 120, 50, arcade.color.GRAY, "Replay", Start, arcade.color.BLACK)
+    Back = Buttons(400, 150, 120, 50, arcade.color.GRAY, "Back", Main, arcade.color.BLACK)
+    Replay = Buttons(SCREEN_WIDTH - 400, 150, 120, 50, arcade.color.GRAY, "Replay", Start, arcade.color.BLACK)
     Button_list = []
     def on_show(self):
         arcade.set_background_color(arcade.color.AVOCADO)
@@ -158,8 +196,8 @@ class GameOver(arcade.View):
             button.check_mouse_release(x,y)
 
 class Introduction(arcade.View):
-    back = Button(100, 80, 100, 50, arcade.color.GRAY, "Back", None, arcade.color.WHITE)
-    play = Button(SCREEN_WIDTH - 100, 80, 100, 50, arcade.color.GRAY, "Play", Start, arcade.color.WHITE)
+    back = Buttons(100, 80, 100, 50, arcade.color.GRAY, "Back", Main, arcade.color.WHITE)
+    play = Buttons(SCREEN_WIDTH - 100, 80, 100, 50, arcade.color.GRAY, "Play", Start, arcade.color.WHITE)
     arrowButtonList = []
     def messageDisplay(self):
         arcade.draw_rectangle_filled(SCREEN_WIDTH/2,SCREEN_HEIGHT/2,500,420,(110,100,20,50))
@@ -196,13 +234,13 @@ class Introduction(arcade.View):
 class MainMenu(arcade.View):
 
         
-    Play = Button(305,260,150,50,
+    Play = Buttons(305,260,150,50,
     arcade.color.AVOCADO,"Play",
     Instruct,arcade.color.GREEN)
-    Help = Button(390,200,150,50,
-    arcade.color.AVOCADO,"Help"
-    ,None,arcade.color.GREEN)
-    Heroes = Button(485,260,150,50,
+    Exits = Buttons(390,200,150,50,
+    arcade.color.AVOCADO,"Exit"
+    ,Exit,arcade.color.GREEN)
+    Heroes = Buttons(485,260,150,50,
     arcade.color.AVOCADO,"Heroes",
     None,arcade.color.GREEN)
     backdrop1 = arcade.Sprite("../../SpriteLists/zombie.png"
@@ -218,7 +256,7 @@ class MainMenu(arcade.View):
     def on_show(self):
         arcade.set_background_color(arcade.color.BISTRE_BROWN)
         self.button_list.append(self.Play)
-        self.button_list.append(self.Help)
+        self.button_list.append(self.Exits)
         self.button_list.append(self.Heroes)
         self.background.append(self.hero)
         self.background.append(self.backdrop1)
@@ -230,7 +268,7 @@ class MainMenu(arcade.View):
                                             SCREEN_WIDTH, SCREEN_HEIGHT,
                                             self.back)
         self.Play.draw_button()
-        self.Help.draw_button()
+        self.Exits.draw_button()
         self.Heroes.draw_button()
         self.background.draw()
 
@@ -497,6 +535,7 @@ class StartGame(arcade.View):
     Hero = hero(100,"Zkiller")
     Barriers = Barrier(25,341)
     Enemys = Enemy(100,"Enemy",Barriers.getWalllistDown(),Barriers.getWalllistUp())
+    Recorder = Record()
     backdrop = arcade.load_texture("../../SpriteLists/backdrop.png")
     direction = ""
     valueFor = 5
@@ -602,6 +641,7 @@ class StartGame(arcade.View):
 
     def checkHero(self):
         if self.Hero.getLifePoints() == 0:
+            self.Recorder.getHighScore(self.score,self.wave)
             self.Enemys.setEnemy(arcade.SpriteList())
             self.wave = 1
             self.score = 0
